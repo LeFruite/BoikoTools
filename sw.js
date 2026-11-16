@@ -2,7 +2,7 @@
    Сторінки учнів (index.html, live.html) і запити до Apps Script він не чіпає. */
 const CACHE = 'samostiini-v3', FONTS = 'samostiini-fonts-v1';
 const SHELL = ['editor.html', 'makeup.html', 'plan.html', 'grades.html', 'materials.html', 'journal.html', 'students.html', 'setup.html',
-  'seating.html', 'live-teacher.html', 'docs.html', 'config.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
+  'seating.html', 'live-teacher.html', 'docs.html', 'config.js', 'nav.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => Promise.all(SHELL.map(u => c.add(u).catch(() => {})))).then(() => self.skipWaiting()));
 });
