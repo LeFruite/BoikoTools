@@ -62,6 +62,7 @@
   .gin { width:78px; text-align:center; } .acts { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
   .scroll { overflow:auto; }
 </style>
+<script>if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));</script>
 </head>
 <body>
 <div class="top"><div class="top-in"><div class="brand">🕒 Відпрацювання</div>
@@ -114,14 +115,20 @@
     return x[1] === y[1] || ((x[1].length <= 2 || y[1].length <= 2) && x[1][0] === y[1][0]);
   }
 
+  function apply(d) {
+    S.students = []; Object.keys(d.st.students || {}).forEach(g => d.st.students[g].forEach(s => S.students.push({ name: s.name, group: g })));
+    S.items = d.ml.items; S.today = d.ml.today; S.plans = d.plans || {};
+  }
   async function boot() {
-    app.innerHTML = '<div class="panel muted">Завантаження…</div>';
+    let cached = null; try { cached = JSON.parse(ls.g('mk_cache') || 'null'); } catch (e) {}
+    if (cached && cached.st && cached.ml) { apply(cached); S.ym = S.today.slice(0, 7); draw(); }   // миттєво зі збереженого, далі оновлюємо
+    else app.innerHTML = '<div class="panel muted">Завантаження…</div>';
     try {
-      const [st, ml] = await Promise.all([api('t_stu_get'), api('t_mk_list')]);
-      S.students = []; Object.keys(st.students || {}).forEach(g => st.students[g].forEach(s => S.students.push({ name: s.name, group: g })));
-      S.items = ml.items; S.today = ml.today;
-      try { S.plans = (await api('t_plan_get')).plans || {}; } catch (e) { if (e.message === 'pin') return; S.plans = {}; }
-    } catch (e) { if (e.message !== 'pin') app.innerHTML = '<div class="panel err">' + esc(e.message) + '</div>'; return; }
+      const [st, ml, pl] = await Promise.all([api('t_stu_get'), api('t_mk_list'), api('t_plan_get').catch(e => { if (e.message === 'pin') throw e; return { plans: {} }; })]);
+      const d = { st, ml, plans: pl.plans || {} }; ls.s('mk_cache', JSON.stringify(d));
+      if (cached && S.stu) { S.items = ml.items; S.today = ml.today; return; }   // користувач уже працює з учнем — не збиваємо екран
+      apply(d);
+    } catch (e) { if (e.message !== 'pin' && !cached) app.innerHTML = '<div class="panel err">' + esc(e.message) + '</div>'; if (!cached) return; else return; }
     S.ym = S.today.slice(0, 7);
     draw();
   }
@@ -340,5 +347,6 @@
   if (PIN) boot(); else login();
 })();
 </script>
+<script src="nav.js"></script>
 </body>
 </html>
