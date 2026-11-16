@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Підключення — Самостійні</title>
+<script src="config.js"></script>
+<link rel="icon" href="icon-192.png">
+<meta name="theme-color" content="#1f7a5a">
+<style>
+  :root { --bg:#f3f1ea; --card:#fff; --ink:#1d2a2e; --muted:#667378; --line:#dcd9ce; --accent:#1f7a5a; --accent-soft:#e3f2ec; --bad:#c0392b; --amber-soft:#fff1d6; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif; }
+  .wrap { max-width:720px; margin:0 auto; padding:20px 16px 60px; }
+  h1 { font-size:26px; margin:6px 0 4px; } .lead { color:var(--muted); margin:0 0 18px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px; margin-bottom:14px; }
+  .card.off { opacity:.55; }
+  .num { display:inline-flex; width:28px; height:28px; border-radius:50%; background:var(--accent); color:#fff; font-weight:800; align-items:center; justify-content:center; margin-right:8px; }
+  h2 { font-size:18px; margin:0 0 8px; display:flex; align-items:center; }
+  .btn { display:inline-block; border:1.5px solid var(--accent); background:var(--accent); color:#fff; border-radius:10px; padding:11px 18px; font:inherit; font-weight:700; cursor:pointer; text-decoration:none; }
+  .btn.ghost { background:#fff; color:var(--ink); border-color:var(--line); } .btn[disabled] { opacity:.5; cursor:default; }
+  label { display:block; font-size:13px; font-weight:700; color:var(--muted); margin:12px 0 4px; }
+  input, textarea { width:100%; font:inherit; padding:10px 12px; border:1.5px solid var(--line); border-radius:9px; background:#fff; color:var(--ink); }
+  .hint { font-size:13.5px; color:var(--muted); margin-top:4px; }
+  .note { background:var(--amber-soft); border-radius:10px; padding:10px 12px; font-size:14px; margin-top:10px; }
+  .msg { margin-top:12px; font-weight:600; } .msg.err { color:var(--bad); } .msg.ok { color:#1d5a37; }
+  ol { padding-left:20px; margin:8px 0; } li { margin:4px 0; }
+  .hidden { display:none !important; }
+  a.link { color:var(--accent); cursor:pointer; text-decoration:underline; background:none; border:0; font:inherit; padding:0; }
+  code { background:#eef0ee; padding:1px 5px; border-radius:5px; }
+</style>
+<script>if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));</script>
+</head>
+<body>
+<div class="wrap">
+  <h1>Самостійні — підключення</h1>
+  <p class="lead">Усе зберігається у вашому Google-акаунті: учні й оцінки бачите тільки ви. Налаштування займає кілька хвилин.</p>
+
+  <div id="main">
+    <div class="card" id="c1">
+      <h2><span class="num">1</span>Створіть свою таблицю</h2>
+      <p style="margin:0 0 12px">Натисніть кнопку й у вікні Google оберіть <b>«Створити копію»</b>. Ввійдіть у свій акаунт, якщо попросить.</p>
+      <a class="btn" id="copy" target="_blank" rel="noopener">Створити копію таблиці</a>
+      <div class="note hidden" id="notpl">Адміністратор сайту ще не вказав таблицю-шаблон (константа <code>TEMPLATE_ID</code> на початку <code>start.html</code>).</div>
+    </div>
+
+    <div class="card" id="c2">
+      <h2><span class="num">2</span>Опублікуйте скрипт</h2>
+      <p style="margin:0">У новій таблиці (якщо меню не видно — оновіть сторінку) відкрийте <b>Самостійні → ⚙ Встановлення та налаштування</b>. Там — покрокова підказка:</p>
+      <ol>
+        <li><b>Розширення → Apps Script → Розгорнути → Нове розгортання</b>, тип «Веб-застосунок»;</li>
+        <li>«Виконувати від імені» — <b>Я</b>, «Хто має доступ» — <b>Усі</b>, натисніть «Розгорнути»;</li>
+        <li>Google попросить дозволи: <b>«Додатково» → «Перейти…» → «Дозволити»</b> (це ваш власний скрипт, тому попередження нормальне).</li>
+      </ol>
+      <p style="margin:0">У вікні підказки з'явиться кнопка, яка відкриє цю сторінку вже з вашою адресою.</p>
+    </div>
+
+    <div class="card" id="c3">
+      <h2><span class="num">3</span>Підключіть</h2>
+      <label for="url">Адреса веб-застосунку (закінчується на /exec)</label>
+      <input id="url" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off">
+      <div id="newbox">
+        <label for="pin">Придумайте пін вчителя (від 4 символів)</label>
+        <input id="pin" type="password" autocomplete="new-password">
+        <div class="hint">Пін потрібен для входу до кабінету. Учням його не повідомляйте.</div>
+        <label for="groups">Ваші групи / класи (через кому)</label>
+        <input id="groups" placeholder="7-А, 7-Б, 8-2">
+        <div class="hint">Назва починається з номера класу: «7-А», «8-2». Додати нові групи можна пізніше в налаштуваннях.</div>
+      </div>
+      <div id="oldbox" class="hidden">
+        <div class="note">У цьому скрипті пін уже задано. Введіть його, щоб увійти.</div>
+        <label for="pin2">Пін вчителя</label>
+        <input id="pin2" type="password" autocomplete="current-password">
+      </div>
+      <div style="margin-top:14px"><button class="btn" id="go">Підключити</button></div>
+      <div class="msg" id="msg" role="status" aria-live="polite"></div>
+      <p class="hint" style="margin-top:14px">Уже все налаштовано раніше? <button class="link" id="toLogin">Просто увійти</button></p>
+    </div>
+  </div>
+
+  <div class="card hidden" id="done">
+    <h2>✅ Готово</h2>
+    <p style="margin:0 0 12px">Скрипт підключено. Перший крок — додати учнів до груп, потім можна створювати роботи.</p>
+    <a class="btn" href="students.html">Додати учнів</a> <a class="btn ghost" href="editor.html">Кабінет вчителя</a>
+  </div>
+
+  <div class="card hidden" id="settings">
+    <h2>⚙ Налаштування</h2>
+    <label for="spin">Поточний пін</label><input id="spin" type="password" autocomplete="current-password">
+    <div style="margin-top:10px"><button class="btn ghost" id="sload">Показати мої налаштування</button></div>
+    <div id="sbody" class="hidden">
+      <label for="sgroups">Групи / класи (через кому)</label><input id="sgroups">
+      <label for="snew">Новий пін (залиште порожнім, щоб не змінювати)</label><input id="snew" type="password" autocomplete="new-password">
+      <div style="margin-top:12px"><button class="btn" id="ssave">Зберегти</button></div>
+    </div>
+    <div class="msg" id="smsg"></div>
+    <p class="hint"><a class="link" href="editor.html">← До кабінету</a></p>
+  </div>
+</div>
+<script>
+(() => {
+  const TEMPLATE_ID = '';   // ← ID таблиці-шаблону (частина адреси між /d/ і /edit). Таблиця має бути доступна «усім, хто має посилання» для перегляду.
+  const $ = id => document.getElementById(id);
+  const ls = { g(k) { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } }, s(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
+  if (TEMPLATE_ID) $('copy').href = 'https://docs.google.com/spreadsheets/d/' + encodeURIComponent(TEMPLATE_ID) + '/copy';
+  else { $('copy').classList.add('hidden'); $('notpl').classList.remove('hidden'); }
+  const say = (el, t, kind) => { el.textContent = t; el.className = 'msg' + (kind ? ' ' + kind : ''); };
+  const normUrl = v => {
+    v = String(v || '').trim();
+    if (/^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec$/.test(v)) return v;
+    if (/^[\w-]{20,}$/.test(v)) return 'https://script.google.com/macros/s/' + v + '/exec';
+    return '';
+  };
+  async function post(url, data) {
+    let r; try { r = await fetch(url, { method: 'POST', body: new URLSearchParams(data) }); } catch (e) { throw new Error('Немає зв\'язку або адреса неправильна. Перевірте, що доступ розгортання — «Усі».'); }
+    let j; try { j = await r.json(); } catch (e) { throw new Error('Скрипт відповів незрозуміло. Перевірте адресу й що розгортання виконано з доступом «Усі».'); }
+    return j;
+  }
+  $('url').value = (/^https:/.test(ls.g('script_api')) ? ls.g('script_api') : '') || (window.SCRIPT_URL || '');
+  let state = 'new';
+  async function probe() {
+    const url = normUrl($('url').value); if (!url) return;
+    try {
+      const j = await post(url, { action: 'setup_status' });
+      if (j.error) throw new Error('Це не скрипт «Самостійних» або в ньому стара версія коду.');
+      state = j.configured ? 'old' : 'new';
+      $('newbox').classList.toggle('hidden', state === 'old'); $('oldbox').classList.toggle('hidden', state === 'new');
+      $('go').textContent = state === 'old' ? 'Увійти' : 'Підключити'; say($('msg'), '');
+    } catch (e) { say($('msg'), e.message, 'err'); }
+  }
+  $('url').addEventListener('change', probe); $('url').addEventListener('blur', probe);
+  $('toLogin').onclick = () => { state = 'old'; $('newbox').classList.add('hidden'); $('oldbox').classList.remove('hidden'); $('go').textContent = 'Увійти'; $('c1').classList.add('off'); $('c2').classList.add('off'); };
+  $('go').onclick = async () => {
+    const url = normUrl($('url').value); if (!url) return say($('msg'), 'Вставте адресу веб-застосунку (закінчується на /exec).', 'err');
+    $('go').disabled = true; say($('msg'), 'Перевіряємо…');
+    try {
+      const st = await post(url, { action: 'setup_status' });
+      if (st.error) throw new Error('Це не скрипт «Самостійних» або в ньому стара версія коду.');
+      let pin;
+      if (!st.configured && state !== 'old') {
+        pin = $('pin').value; if (pin.length < 4) throw new Error('Пін має містити щонайменше 4 символи.');
+        if (!$('groups').value.trim()) throw new Error('Вкажіть хоча б одну групу, наприклад 7-А.');
+        const r = await post(url, { action: 'setup_init', pin, groups: $('groups').value });
+        if (r.error) throw new Error(r.error === 'already' ? 'Пін уже задано. Скористайтеся входом.' : r.error);
+      } else pin = $('pin2').value || $('pin').value;
+      const a = await post(url, { action: 't_auth', pin });
+      if (a.error) throw new Error(a.error === 'pin' ? 'Невірний пін.' : a.error);
+      ls.s('script_api', url); try { sessionStorage.setItem('pin', pin); } catch (e) {}
+      $('main').classList.add('hidden'); $('done').classList.remove('hidden'); window.scrollTo(0, 0);
+    } catch (e) { say($('msg'), e.message, 'err'); }
+    $('go').disabled = false;
+  };
+
+  /* ---- налаштування (start.html#settings) ---- */
+  function showSettings() { $('main').classList.add('hidden'); $('settings').classList.remove('hidden'); try { $('spin').value = sessionStorage.getItem('pin') || ''; } catch (e) {} }
+  if (location.hash === '#settings') showSettings();
+  const sUrl = () => normUrl(ls.g('script_api') || window.SCRIPT_URL || '');
+  $('sload').onclick = async () => {
+    const url = sUrl(); if (!url) return say($('smsg'), 'Спершу підключіть скрипт.', 'err');
+    try {
+      const j = await post(url, { action: 't_settings_get', pin: $('spin').value });
+      if (j.error) throw new Error(j.error === 'pin' ? 'Невірний пін.' : j.error);
+      $('sgroups').value = (j.groups || []).join(', '); $('sbody').classList.remove('hidden'); say($('smsg'), '');
+      try { sessionStorage.setItem('pin', $('spin').value); } catch (e) {}
+    } catch (e) { say($('smsg'), e.message, 'err'); }
+  };
+  $('ssave').onclick = async () => {
+    const url = sUrl();
+    try {
+      const d = { action: 't_settings_set', pin: $('spin').value, groups: $('sgroups').value };
+      if ($('snew').value) d.newPin = $('snew').value;
+      const j = await post(url, d); if (j.error) throw new Error(j.error === 'pin' ? 'Невірний пін.' : j.error);
+      if ($('snew').value) { $('spin').value = $('snew').value; $('snew').value = ''; }
+      try { sessionStorage.setItem('pin', $('spin').value); } catch (e) {}
+      $('sgroups').value = (j.groups || []).join(', '); say($('smsg'), 'Збережено', 'ok');
+    } catch (e) { say($('smsg'), e.message, 'err'); }
+  };
+  probe();
+})();
+</script>
+<script src="nav.js"></script>
+</body>
+</html>
