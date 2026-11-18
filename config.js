@@ -1,10 +1,11 @@
 // Адреса вашого Apps Script (Deploy → Manage deployments → Web app URL, закінчується на /exec).
-// Вносити її сюди НЕ ОБОВ'ЯЗКОВО: відкрийте setup.html на своєму сайті — він перевірить адресу й запам'ятає її.
+// Вносити її сюди НЕ ОБОВ'ЯЗКОВО: відкрийте start.html на сайті — він перевірить адресу й запам'ятає її.
 // Посилання для учнів, які створює кабінет вчителя, самі містять потрібну адресу.
 (function () {
-  var own = "https://script.google.com/macros/s/AKfycbx3Ov1bucIYd-kuNLa0gs-VxU3x9m6NEYn27RSizdQnZSmWBk_w_cgoqA1JSXCZlNE/exec";
+  var own = "";   // лише для особистого сайту одного вчителя; для спільного сайту ЗАЛИШАЙТЕ порожнім
+  var host = "";  // домен особистого сайту, наприклад "ім'я.github.io" (необов'язково)
   var url = "", fromStorage = false;
-  try { if (/(^|\.)lefruite\.github\.io$/i.test(location.hostname)) url = own; } catch (e) {}   // сайт автора; на чужих сайтах цей рядок не діє
+  try { if (own && host && location.hostname.toLowerCase() === host.toLowerCase()) url = own; } catch (e) {}
   if (!url) {
     try {
       var q = new URLSearchParams(location.search).get("api");
