@@ -358,16 +358,17 @@
   const TOOLS = [
     ['🪑', 'Розсадка', 'Схема кабінету, посадка по групах', 'seating.html'],
     ['📁', 'Матеріали', 'Свої HTML-файли для класів', 'materials.html'],
-    ['📋', 'Журнал самостійних', 'Результати робіт по класах', 'journal.html'],
+    ['📋', 'Журнал і оцінки', 'Самостійні та оцінки з Extra', 'journal.html'],
     ['🕒', 'Відпрацювання', 'Призначити дату, автоматична 2', 'makeup.html'],
     ['📅', 'План занять', 'Теми по датах для класів', 'plan.html'],
-    ['📊', 'Оцінки з Extra', 'Таблиця учні × дати', 'grades.html'],
     ['👥', 'Списки груп', 'Учні та групи', 'students.html'],
     ['📡', 'Живий урок', 'Питання в реальному часі', 'live-teacher.html'],
     ['📖', 'Довідка', 'Як усе працює', 'docs.html'],
     null,
     ['🏦', 'Банк питань', 'Питання окремо від робіт', '', 'bank'],
+    ['📱', 'Вхід на іншому пристрої', 'QR-код для телефона чи планшета', '', 'device'],
     ['💾', 'Резервна копія', 'Зберегти все одним файлом', '', 'backup'],
+    ['⚙️', 'Налаштування', 'Групи, пін, підключення', 'start.html#settings'],
     ['♻️', 'Відновити з копії', 'Завантажити файл копії', '', 'restore']
   ];
   function toolsMenu() {
@@ -1225,6 +1226,19 @@
     m.className = 'rd-back'; m.innerHTML = '<div class="rd-panel" style="max-width:640px">' + html + '</div>'; return m;
   }
   const closeModal = () => { const m = $('#xm'); if (m) m.remove(); };
+  function showDevice() {   // QR-код: сканується телефоном і відкриває кабінет, уже підключений до вашого скрипта (пін вводиться вручну)
+    const mm = String(SCRIPT_URL || '').match(/^https:\/\/script\.google\.com\/macros\/s\/([\w-]+)\/exec$/);
+    const link = new URL('editor.html', location.href).href + '?api=' + (mm ? mm[1] : encodeURIComponent(SCRIPT_URL || ''));
+    const svg = window.QR ? QR.svg(link, 240) : '';
+    const m = modal('<h2 style="margin-top:0">📱 Вхід на іншому пристрої</h2>' +
+      '<p>Наведіть камеру телефона чи планшета на QR-код — відкриється ваш кабінет, підключений до вашого скрипта. Далі лишається ввести пін.</p>' +
+      '<div style="text-align:center;margin:10px 0">' + (svg || '<div class="muted">QR-код недоступний — скористайтеся посиланням нижче.</div>') + '</div>' +
+      '<input id="dvlink" readonly value="' + esc(link) + '" style="width:100%">' +
+      '<p class="muted" style="font-size:13px">У коді немає піна, тож сторонній, хто його побачить, у кабінет не потрапить без піна. Але не публікуйте цей код і посилання відкрито.</p>' +
+      '<div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn ghost" id="dvcopy">Копіювати посилання</button><button class="btn" id="dvx">Закрити</button></div>');
+    m.querySelector('#dvx').onclick = closeModal;
+    m.querySelector('#dvcopy').onclick = () => { const i = m.querySelector('#dvlink'); i.select(); try { navigator.clipboard.writeText(i.value); } catch (x) { document.execCommand('copy'); } toast('Скопійовано'); };
+  }
   async function bankPull() {
     toast('Завантажую банк…');
     try { await bankLoad(); } catch (e) { if (e.message !== 'pin') toast(e.message, true); return; }
@@ -1327,7 +1341,7 @@
           try { await api('t_save', { id: x.id, json: JSON.stringify(x.test) }); if (x.folder) await api('t_folder', { id: x.id, folder: x.folder }); ok++; }
           catch (e) { if (e.message === 'pin') return; bad.push((x.test && x.test.title) || x.id); }
         }
-        for (const cls of Object.keys(d.seats || {})) await api('t_seat_save', { cls, json: JSON.stringify(d.seats[cls]) });
+        for (const key of Object.keys(d.seats || {})) { const pr = key.split(' @ '); await api('t_seat_save', { cls: pr[0], room: pr[1] || '', json: JSON.stringify(d.seats[key]) }); }
         const items = (d.bank || []).map(b => ({ type: b.type, topic: b.topic, grade: b.grade, subject: b.subject, q: b.q }));
         for (let i = 0; i < items.length; i += 30) await api('t_bank_save', { items: JSON.stringify(items.slice(i, i + 30)) });
         toast('Відновлено робіт: ' + ok + (bad.length ? '. Не вдалося: ' + bad.join(', ') : ''), bad.length > 0);
@@ -1354,6 +1368,7 @@
         catch (er) { if (er.message !== 'pin') toast(er.message, true); }
         return; }
       case 'bank': document.querySelectorAll('details.tools[open]').forEach(d => d.open = false); return showBank();
+      case 'device': document.querySelectorAll('details.tools[open]').forEach(d => d.open = false); return showDevice();
       case 'backup': document.querySelectorAll('details.tools[open]').forEach(d => d.open = false); return doBackup();
       case 'restore': document.querySelectorAll('details.tools[open]').forEach(d => d.open = false); return doRestore();
       case 'q-an': return showAnalysis();
@@ -1541,5 +1556,6 @@
   })();
 })();
 </script>
+<script src="qr.js"></script>
 </body>
 </html>
