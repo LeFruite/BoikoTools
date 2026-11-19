@@ -3,8 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Розсадка і відвідуваність</title>
+<title>Списки груп</title>
 <script src="config.js"></script>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1f7a5a">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Самостійні">
+<script>if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));</script>
+
 <style>
   :root { --bg:#f3f1ea; --card:#fff; --ink:#1d2a2e; --muted:#667378; --line:#dcd9ce; --accent:#1f7a5a; --accent-dark:#17614a; --accent-soft:#e3f2ec; --bad:#c0392b; --bad-soft:#fbe0dc; --amber:#b87503; --amber-soft:#fdefc9; }
   * { box-sizing:border-box; }
@@ -28,40 +36,21 @@
   #toast { position:fixed; bottom:16px; left:50%; transform:translateX(-50%); background:var(--ink); color:#fff; padding:10px 18px; border-radius:10px; z-index:20; max-width:90vw; }
   #toast.bad { background:var(--bad); }
 
-  .room { display:flex; flex-direction:column; gap:10px; }
-  .room.top-board { flex-direction:column-reverse; }
-  .hall { display:flex; gap:10px; align-items:stretch; }
-  .hall.win-left { flex-direction:row-reverse; }
-  .desks { flex:1; display:grid; gap:0; border:2px solid var(--ink); border-radius:6px; background:#fff; min-width:0; }
-  .desk { border:1px solid var(--ink); padding:6px; display:flex; flex-direction:column; gap:6px; justify-content:center; min-height:84px; min-width:0; }
-  .win { writing-mode:vertical-rl; text-orientation:upright; letter-spacing:2px; font-weight:800; font-size:13px; border:2px solid var(--ink); border-radius:6px; display:flex; align-items:center; justify-content:center; padding:6px 2px; background:#fff; }
-  .board { border:2px solid var(--ink); border-radius:6px; padding:12px 18px; font-weight:800; letter-spacing:.1em; background:#fff; }
-  .seat { display:block; width:100%; border:1.5px solid transparent; border-radius:8px; padding:8px 10px; text-align:left; font:inherit; background:#f7f6f1; color:var(--ink); min-height:40px; cursor:pointer; line-height:1.25; }
-  .seat:hover { border-color:var(--accent); }
-  .seat.empty { background:transparent; cursor:default; border-style:dashed; border-color:#e5e2d8; }
-  .seat.n { background:var(--bad); color:#fff; font-weight:700; }
-  .seat.z { background:var(--amber-soft); border-color:var(--amber); color:#6b4600; font-weight:700; }
-  .seat.g { background:var(--accent-soft,#e3f2ec); border-color:var(--accent,#1f7a5a); font-weight:700; }
-  .seat .tag { float:right; font-weight:800; margin-left:6px; }
-  .seat-sel { width:100%; padding:6px; font-size:14px; }
-  .legend { display:flex; gap:14px; flex-wrap:wrap; font-size:14px; margin:10px 0; align-items:center; }
-  .sw { display:inline-block; width:14px; height:14px; border-radius:4px; vertical-align:-2px; margin-right:5px; }
-  .sum { font-weight:700; }
-  .pool { margin-top:14px; } .pool .seat { display:inline-block; width:auto; margin:0 6px 6px 0; }
-  .sv { font-size:14px; font-weight:700; } .sv.ok { color:var(--accent-dark); } .sv.bad { color:var(--bad); }
-  @media (max-width:640px) { .wrap { padding:10px; } .desk { min-height:70px; padding:4px; } .seat { padding:6px; font-size:14px; } }
-  #gp { position:fixed; inset:0; z-index:9999; background:rgba(20,28,30,.96); color:#fff; display:flex; flex-direction:column; padding:16px; overflow:auto; }
-  #gp .nm { font-size:22px; font-weight:800; text-align:center; margin:6px 0 2px; } #gp .sub { text-align:center; opacity:.75; margin-bottom:14px; }
-  #gp .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; flex:1; max-width:520px; width:100%; margin:0 auto; align-content:stretch; }
-  #gp button { font:inherit; font-weight:800; font-size:30px; border:0; border-radius:16px; color:#1d2a2e; background:#fff; min-height:72px; cursor:pointer; }
-  #gp button.cur { outline:5px solid #ffd54a; }
-  #gp .row2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; max-width:520px; width:100%; margin:12px auto 0; }
-  #gp .row2 button { font-size:20px; min-height:60px; } #gp .abs { background:#e05a4a; color:#fff; } #gp .clr { background:#4a5a60; color:#fff; } #gp .cls { background:transparent; color:#fff; border:2px solid #7b8b90; }
+  .stu { display:grid; grid-template-columns:32px 1fr 110px 44px; gap:8px; align-items:center; padding:6px 0; border-bottom:1px solid var(--line); }
+  .stu:last-child { border-bottom:0; }
+  .stu .n { color:var(--muted); font-size:13px; text-align:right; }
+  .stu input { width:100%; } .stu select { width:100%; padding:7px 6px; }
+  .stu .x { border:1.5px solid var(--line); background:#fff; border-radius:8px; padding:7px 0; cursor:pointer; color:var(--bad); font-weight:800; }
+  .stu .x:hover { border-color:var(--bad); background:var(--bad-soft); }
+  .stu.saving input { background:var(--accent-soft); } .stu.err input { border-color:var(--bad); }
+  .addbox { margin-top:16px; padding-top:14px; border-top:2px solid var(--line); }
+  textarea { font:inherit; padding:8px 10px; border:1.5px solid var(--line); border-radius:8px; width:100%; background:#fff; color:var(--ink); }
+  @media (max-width:640px) { .wrap { padding:10px; } .stu { grid-template-columns:1fr 86px 40px; } .stu .n { display:none; } }
 </style>
 </head>
 <body>
-<div class="top"><div class="top-in"><div class="brand">Розсадка і відвідуваність</div>
-  <a class="btn ghost" href="editor.html">Кабінет вчителя</a></div></div>
+<div class="top"><div class="top-in"><div class="brand">Списки груп</div>
+  <a class="btn ghost" href="seating.html">Розсадка</a><a class="btn ghost" href="journal.html">Журнал оцінок</a><a class="btn ghost" href="editor.html">Кабінет вчителя</a></div></div>
 
 <div class="wrap">
   <div id="login" class="panel hidden" style="max-width:380px;margin:40px auto">
@@ -70,35 +59,15 @@
   </div>
 
   <div id="app" class="hidden">
-    <div class="ctl">
-      <div><label class="f">Група</label><select id="cls"></select></div>
-      <div><label class="f">Кабінет</label><select id="room-sel"><option value="">Звичайний кабінет</option><option value="Кабінет хімії">Кабінет хімії</option></select></div>
-      <div id="datebox"><label class="f">Дата</label><input type="date" id="date"></div>
-      <div id="lessonbox"><label class="f">Урок (необов'язково)</label><select id="lesson"><option value="">—</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select></div>
-      <div style="display:flex;gap:6px"><button class="btn on" id="m-att">Відвідуваність</button><button class="btn ghost" id="m-edit">Налаштувати розсадку</button></div>
-      <span class="sv" id="sv"></span>
-    </div>
-
-    <div id="att-view" class="panel">
-      <div class="legend"><span><i class="sw" style="background:#f7f6f1;border:1px solid var(--line)"></i>Присутній (нічого не пишемо)</span><span><i class="sw" style="background:var(--bad)"></i>Н — відсутній</span><span class="muted">Торкніться імені: Н → З → скасувати</span><span class="sum" id="sum"></span><span><i class="sw" style="background:var(--accent-soft,#e3f2ec);border:1px solid var(--accent,#1f7a5a)"></i>Число — оцінка за урок</span></div>
-      <div id="room"></div>
-      <div class="pool" id="pool"></div>
-    </div>
-
-    <div id="edit-view" class="panel hidden">
-      <div class="ctl">
-        <div><label class="f">Рядів</label><input type="number" id="e-rows" min="1" max="10" style="width:80px"></div>
-        <div><label class="f">Парт у ряду</label><input type="number" id="e-cols" min="1" max="8" style="width:80px"></div>
-        <div><label class="f">Місць за партою</label><input type="number" id="e-seats" min="1" max="3" style="width:80px"></div>
-        <div><label class="f">Дошка</label><select id="e-board"><option value="bottom">знизу</option><option value="top">зверху</option></select></div>
-        <div><label class="f">Вікна</label><select id="e-win"><option value="right">праворуч</option><option value="left">ліворуч</option><option value="none">немає</option></select></div>
+    <div class="ctl"><div><label class="f">Група</label><select id="cls"></select></div><div class="muted" id="cnt"></div></div>
+    <div class="panel">
+      <div id="list"></div>
+      <div class="addbox">
+        <label class="f">Додати учнів у цю групу (кожне ім'я з нового рядка: Прізвище Ім'я По батькові)</label>
+        <textarea id="newnames" rows="3" placeholder="Іваненко Марія Петрівна"></textarea>
+        <div style="margin-top:10px"><button class="btn" id="add">+ Додати</button></div>
+        <p class="muted" style="font-size:13px;margin:10px 0 0">Імена зберігаються в аркуші «Журнал N клас» у вашій таблиці. «✕» прибирає учня з групи (зі списків на сайті), але його рядок і оцінки в журналі лишаються.</p>
       </div>
-      <div class="ctl"><button class="btn ghost" id="e-fill">Заповнити за абеткою</button><button class="btn ghost" id="e-clear">Очистити схему</button>
-        <button class="btn ghost" id="e-imp">Імпорт зі схеми (файл)</button><input type="file" id="e-file" accept=".json" class="hidden">
-        <button class="btn" id="e-save">Зберегти розсадку</button></div>
-      <div class="muted" style="font-size:14px;margin-bottom:8px">Оберіть учня в кожному місці. Якщо учень уже сидить деінде, його буде переміщено. Порожня парта лишається порожньою.</div>
-      <div id="e-room"></div>
-      <div class="pool" id="e-pool"></div>
     </div>
   </div>
 </div>
@@ -109,12 +78,8 @@
   const $ = id => document.getElementById(id);
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   let PIN = ''; try { PIN = sessionStorage.getItem('pin') || ''; } catch (e) {}
-  let ROSTER = {}, LAY = null, MARKS = {}, GRADES = {}, dirty = false, mode = 'att', loadSeq = 0;
-  const short = n => String(n).trim().split(/\s+/).slice(0, 2).join(' ');
-  const cls = () => $('cls').value, room = () => $('room-sel').value;
-  function toast(m, bad) { const t = $('toast'); t.textContent = m; t.className = bad ? 'bad' : ''; clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.add('hidden'), bad ? 5000 : 2200); }
-  function sv(kind, txt) { const e = $('sv'); e.className = 'sv ' + kind; e.textContent = txt; }
-
+  let D = { groups: [], students: {} }, busy = false;
+  function toast(m, bad) { const t = $('toast'); t.textContent = m; t.className = bad ? 'bad' : ''; clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.add('hidden'), bad ? 6000 : 2600); }
   async function api(action, data) {
     let r; try { r = await fetch(SCRIPT_URL, { method: 'POST', body: new URLSearchParams(Object.assign({ action, pin: PIN }, data || {})) }); } catch (e) { throw new Error('Немає зв\'язку із сервером'); }
     let j; try { j = await r.json(); } catch (e) { throw new Error('Сервер відповів незрозуміло. Опублікуйте оновлений Code.gs (Нова версія).'); }
@@ -129,156 +94,61 @@
   };
   $('pin').addEventListener('keydown', e => { if (e.key === 'Enter') $('login-go').click(); });
 
-  const todayIso = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
-  async function boot() {
-    if (!SCRIPT_URL) { $('lerr').textContent = 'Не задано адресу сервера (config.js).'; return showLogin('Не задано адресу сервера (config.js).'); }
-    if (!PIN) return showLogin();
-    try { ROSTER = (await api('t_roster')).groups || {}; } catch (e) { if (e.message !== 'pin') showLogin(e.message); return; }
-    $('login').classList.add('hidden'); $('app').classList.remove('hidden');
-    const s = $('cls'); s.length = 0;
-    Object.keys(ROSTER).sort((a, b) => a.localeCompare(b, 'uk', { numeric: true })).forEach(c => s.add(new Option(c, c)));
-    let last = ''; try { last = localStorage.getItem('seat_cls') || ''; } catch (e) {}
-    if (last && ROSTER[last]) s.value = last;
-    try { $('room-sel').value = localStorage.getItem('seat_room') || ''; } catch (e) {}
-    $('date').value = todayIso(); loadAll();
-  }
+  const gradeOf = g => (String(g).match(/^\d+/) || [''])[0];
+  const cmp = (a, b) => a.localeCompare(b, 'uk', { numeric: true });
+  const cur = () => $('cls').value;
 
-  /* ---------- схема ---------- */
-  function emptyLayout(rows, cols, seats) { return { rows: rows, cols: cols, seats: seats, board: 'bottom', win: 'right', grid: Array.from({ length: rows }, () => Array.from({ length: cols }, () => Array(seats).fill(''))) }; }
-  function normLayout(L) {
-    if (!L || !L.grid) return null;
-    L.rows = L.grid.length; L.cols = Math.max(1, ...L.grid.map(r => r.length)); L.seats = Math.max(1, ...L.grid.flat().map(d => d.length));
-    L.grid = L.grid.map(r => Array.from({ length: L.cols }, (_, i) => Array.from({ length: L.seats }, (_, k) => (r[i] || [])[k] || '')));
-    L.board = L.board === 'top' ? 'top' : 'bottom'; L.win = ['left', 'none'].includes(L.win) ? L.win : 'right'; return L;
-  }
-  async function loadAll() {
-    const my = ++loadSeq, c = cls(); if (!c) return;
-    try { localStorage.setItem('seat_cls', c); localStorage.setItem('seat_room', room()); } catch (e) {}
-    sv('', 'Завантаження…');
-    try {
-      const [a, b] = await Promise.all([api('t_seat_get', { cls: c, room: room() }), api('t_att_get', { cls: c, date: $('date').value, lesson: $('lesson').value })]);
-      if (my !== loadSeq) return;
-      LAY = normLayout(a.layout) || null; MARKS = b.marks || {}; GRADES = b.grades || {}; dirty = false; sv('', '');
-      if (!LAY) { LAY = emptyLayout(4, 3, 2); if (mode === 'att') { mode = 'edit'; } }
-      draw();
-    } catch (e) { if (e.message !== 'pin') sv('bad', 'Помилка: ' + e.message); }
-  }
-  ['cls', 'date', 'lesson', 'room-sel'].forEach(id => $(id).addEventListener('change', () => { if (dirty && !confirm('Є незбережені зміни розсадки. Перейти без збереження?')) return; loadAll(); }));
-  $('m-att').onclick = () => { if (dirty && !confirm('Є незбережені зміни розсадки. Перейти без збереження?')) return; mode = 'att'; if (dirty) loadAll(); else draw(); };
-  $('m-edit').onclick = () => { mode = 'edit'; draw(); };
-
-  function seated() { return new Set(LAY.grid.flat(2).filter(Boolean)); }
-  function roomHtml(inner) {
-    const L = LAY, desks = '<div class="desks" style="grid-template-columns:repeat(' + L.cols + ',1fr)">' + inner + '</div>';
-    const win = L.win === 'none' ? '' : '<div class="win">ВІКНА</div>';
-    return '<div class="room ' + (L.board === 'top' ? 'top-board' : '') + '"><div class="hall ' + (L.win === 'left' ? 'win-left' : '') + '">' + desks + win + '</div><div class="board">ДОШКА</div></div>';
+  function fillGroups(keep) {
+    const sel = $('cls'), prev = keep || sel.value;
+    sel.innerHTML = D.groups.slice().sort(cmp).map(g => '<option>' + esc(g) + '</option>').join('');
+    if (D.groups.includes(prev)) sel.value = prev;
   }
   function draw() {
-    $('m-att').className = 'btn ' + (mode === 'att' ? 'on' : 'ghost'); $('m-edit').className = 'btn ' + (mode === 'edit' ? 'on' : 'ghost');
-    $('att-view').classList.toggle('hidden', mode !== 'att'); $('edit-view').classList.toggle('hidden', mode !== 'edit');
-    $('datebox').classList.toggle('hidden', mode !== 'att'); $('lessonbox').classList.toggle('hidden', mode !== 'att');
-    mode === 'att' ? drawAtt() : drawEdit();
+    const g = cur(), list = (D.students[g] || []).slice().sort((a, b) => a.name.localeCompare(b.name, 'uk'));
+    const same = D.groups.filter(x => gradeOf(x) === gradeOf(g)).sort(cmp);
+    $('cnt').textContent = 'Учнів: ' + list.length;
+    $('list').innerHTML = list.length ? list.map((s, i) =>
+      '<div class="stu" data-grade="' + esc(s.grade) + '" data-row="' + s.row + '" data-old="' + esc(s.name) + '"><span class="n">' + (i + 1) + '</span>' +
+      '<input type="text" value="' + esc(s.name) + '" aria-label="Ім\'я">' +
+      '<select aria-label="Група">' + same.map(x => '<option' + (x === g ? ' selected' : '') + '>' + esc(x) + '</option>').join('') + '</select>' +
+      '<button class="x" title="Прибрати з групи">✕</button></div>').join('') : '<div class="muted">У цій групі ще немає учнів.</div>';
   }
+  function apply(r, keep) { D = r; fillGroups(keep); draw(); }
 
-  /* ---------- відвідуваність ---------- */
-  function seatBtn(name) {
-    if (!name) return '<div class="seat empty"></div>';
-    const m = MARKS[name] || '', g = GRADES[name] || ''; return '<button class="seat ' + (m === 'Н' ? 'n' : g ? 'g' : '') + '" data-n="' + esc(name) + '">' + (m ? '<span class="tag">' + m + '</span>' : g ? '<span class="tag">' + esc(g) + '</span>' : '') + esc(short(name)) + '</button>';
+  async function mutate(data, row) {
+    if (busy) return; busy = true; if (row) row.classList.add('saving');
+    try { const r = await api('t_stu', data); apply(r, cur()); return r; }
+    catch (e) { if (e.message !== 'pin') { toast(e.message, true); if (row) row.classList.add('err'); } }
+    finally { busy = false; if (row) row.classList.remove('saving'); }
   }
-  function drawAtt() {
-    $('room').innerHTML = roomHtml(LAY.grid.flat().map(d => '<div class="desk">' + d.map(seatBtn).join('') + '</div>').join(''));
-    const s = seated(), rest = (ROSTER[cls()] || []).filter(n => !s.has(n));
-    $('pool').innerHTML = rest.length ? '<div class="muted" style="margin-bottom:6px">Без місця в схемі:</div>' + rest.map(seatBtn).join('') : '';
-    const n = Object.values(MARKS).filter(v => v === 'Н').length, ng = Object.keys(GRADES).length;
-    $('sum').textContent = 'Н: ' + n + (ng ? ' · Оцінок: ' + ng : '');
-  }
-  let chain = Promise.resolve(), pending = 0;
-  const send = (action, data, onFail) => {   // запити йдуть суворо по черзі, щоб порядок кліків збігався з порядком запису
-    pending++; sv('', 'Зберігаю…');
-    chain = chain.then(() => api(action, Object.assign({ cls: cls(), date: $('date').value, lesson: $('lesson').value }, data)))
-      .then(() => { pending--; if (!pending) sv('ok', '✓ Записано в журнал'); })
-      .catch(err => { pending--; onFail(); sv('bad', 'Не збережено: ' + (err.message === 'ambiguous' ? 'учня не вдалося однозначно знайти в журналі' : err.message)); if (err.message !== 'pin') toast('Не вдалося записати для ' + short(data.name), true); });
-    return chain;
-  };
-  function setAbs(name, nxt) {   // Н ↔ порожньо
-    const old = MARKS[name] || ''; if (nxt) MARKS[name] = nxt; else delete MARKS[name]; drawAtt();
-    send('t_att_set', { name, mark: nxt }, () => { if (old) MARKS[name] = old; else delete MARKS[name]; drawAtt(); });
-  }
-  function setGrade(name, g) {
-    const old = GRADES[name] || ''; if (g) GRADES[name] = g; else delete GRADES[name]; drawAtt();
-    send('t_grade_set', { name, grade: g }, () => { if (old) GRADES[name] = old; else delete GRADES[name]; drawAtt(); });
-  }
-  /* повноекранний вибір оцінки: тап по учню */
-  function openPicker(name) {
-    closePicker(); const cur = GRADES[name] || '', isN = MARKS[name] === 'Н', box = document.createElement('div'); box.id = 'gp'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-label', 'Оцінка для ' + name);
-    let btns = ''; for (let i = 1; i <= 12; i++) btns += '<button data-g="' + i + '" class="' + (String(i) === cur ? 'cur' : '') + '">' + i + '</button>';
-    box.innerHTML = '<div class="nm">' + esc(name) + '</div><div class="sub">' + esc($('date').value) + (cur ? ' · зараз: ' + cur : '') + (isN ? ' · відмічено Н' : '') + '</div><div class="grid">' + btns + '</div>' +
-      '<div class="row2"><button class="abs" data-a="1">' + (isN ? 'Зняти Н' : 'Н — відсутній') + '</button><button class="clr" data-c="1">Прибрати оцінку</button></div>' +
-      '<div class="row2"><button class="cls" data-x="1" style="grid-column:1/3">Закрити</button></div>';
-    box.addEventListener('click', e => {
-      const t = e.target.closest('button'); if (!t) { if (e.target === box) closePicker(); return; }
-      if (t.dataset.g) { setGrade(name, t.dataset.g); if (isN) setAbs(name, ''); }
-      else if (t.dataset.a) setAbs(name, isN ? '' : 'Н');
-      else if (t.dataset.c) setGrade(name, '');
-      closePicker();
-    });
-    document.body.appendChild(box); try { history.pushState({ gp: 1 }, ''); } catch (e) {}
-  }
-  function closePicker() { const b = $('gp'); if (b) b.remove(); }
-  window.addEventListener('popstate', closePicker);
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closePicker(); });
-  document.addEventListener('click', e => {
-    const b = e.target.closest('#att-view .seat[data-n]'); if (!b) return;
-    openPicker(b.dataset.n);
+  $('list').addEventListener('change', async e => {
+    const row = e.target.closest('.stu'); if (!row) return;
+    const name = row.querySelector('input').value.trim(), group = row.querySelector('select').value;
+    if (e.target.tagName === 'INPUT' && name === row.dataset.old) return;
+    const r = await mutate({ kind: 'edit', grade: row.dataset.grade, row: row.dataset.row, old: row.dataset.old, name, group }, row);
+    if (r) toast('Збережено');
   });
+  $('list').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.tagName === 'INPUT') e.target.blur(); });
+  $('list').addEventListener('click', async e => {
+    const b = e.target.closest('.x'); if (!b) return;
+    const row = b.closest('.stu');
+    if (!confirm('Прибрати «' + row.dataset.old + '» з групи ' + cur() + '?\nЙого рядок і оцінки в журналі залишаться.')) return;
+    const r = await mutate({ kind: 'remove', grade: row.dataset.grade, row: row.dataset.row, old: row.dataset.old }, row);
+    if (r) toast('Прибрано з групи');
+  });
+  $('add').onclick = async () => {
+    const names = $('newnames').value; if (!names.trim()) return toast('Введіть хоча б одне ім\'я', true);
+    const r = await mutate({ kind: 'add', group: cur(), names });
+    if (r) { $('newnames').value = ''; toast('Додано: ' + r.added + (r.skipped && r.skipped.length ? '. Пропущено: ' + r.skipped.join('; ') : ''), !!(r.skipped && r.skipped.length && !r.added)); }
+  };
+  $('cls').addEventListener('change', draw);
 
-  /* ---------- налаштування розсадки ---------- */
-  function drawEdit() {
-    const L = LAY; $('e-rows').value = L.rows; $('e-cols').value = L.cols; $('e-seats').value = L.seats; $('e-board').value = L.board; $('e-win').value = L.win;
-    const opts = ['<option value="">—</option>'].concat((ROSTER[cls()] || []).map(n => '<option value="' + esc(n) + '">' + esc(short(n)) + '</option>'));
-    $('e-room').innerHTML = roomHtml(L.grid.map((r, ri) => r.map((d, ci) => '<div class="desk">' + d.map((nm, k) => {
-      const extra = nm && !(ROSTER[cls()] || []).includes(nm) ? '<option value="' + esc(nm) + '" selected>' + esc(short(nm)) + ' (не зі списку)</option>' : '';
-      return '<select class="seat-sel" data-r="' + ri + '" data-c="' + ci + '" data-k="' + k + '">' + opts.join('').replace('value="' + esc(nm) + '"', 'value="' + esc(nm) + '" selected') + extra + '</select>';
-    }).join('') + '</div>').join('')).join(''));
-    // значення (якщо імені немає серед варіантів — додано окремо)
-    $('e-room').querySelectorAll('select').forEach(s => { const nm = L.grid[+s.dataset.r][+s.dataset.c][+s.dataset.k]; if (nm && ![...s.options].some(o => o.value === nm)) s.add(new Option(short(nm) + ' (не зі списку)', nm)); s.value = nm; });
-    const st = seated(), rest = (ROSTER[cls()] || []).filter(n => !st.has(n));
-    $('e-pool').innerHTML = rest.length ? '<div class="muted" style="margin-bottom:6px">Ще без місця (' + rest.length + '):</div>' + rest.map(n => '<span class="seat" style="cursor:default">' + esc(short(n)) + '</span>').join('') : '<div class="muted">Усіх учнів розсаджено.</div>';
-    sv(dirty ? 'bad' : '', dirty ? 'Є незбережені зміни' : '');
+  async function boot() {
+    $('login').classList.add('hidden'); $('app').classList.remove('hidden');
+    try { apply(await api('t_stu_get')); }
+    catch (e) { if (e.message !== 'pin') toast(e.message, true); }
   }
-  function resize() {
-    const L = LAY, rows = Math.max(1, Math.min(10, +$('e-rows').value || 1)), cols = Math.max(1, Math.min(8, +$('e-cols').value || 1)), seats = Math.max(1, Math.min(3, +$('e-seats').value || 1));
-    L.grid = Array.from({ length: rows }, (_, r) => Array.from({ length: cols }, (_, c) => Array.from({ length: seats }, (_, k) => ((L.grid[r] || [])[c] || [])[k] || '')));
-    L.rows = rows; L.cols = cols; L.seats = seats; dirty = true; drawEdit();
-  }
-  ['e-rows', 'e-cols', 'e-seats'].forEach(id => $(id).addEventListener('change', resize));
-  $('e-board').onchange = () => { LAY.board = $('e-board').value; dirty = true; drawEdit(); };
-  $('e-win').onchange = () => { LAY.win = $('e-win').value; dirty = true; drawEdit(); };
-  document.addEventListener('change', e => {
-    const s = e.target.closest('#e-room select.seat-sel'); if (!s) return;
-    const v = s.value, L = LAY;
-    if (v) L.grid.forEach(r => r.forEach(d => d.forEach((x, k) => { if (x === v) d[k] = ''; })));
-    L.grid[+s.dataset.r][+s.dataset.c][+s.dataset.k] = v; dirty = true; drawEdit();
-  });
-  $('e-fill').onclick = () => {
-    if (!confirm('Розсадити всіх за абеткою, починаючи з першого ряду? Поточну схему буде замінено.')) return;
-    const names = (ROSTER[cls()] || []).slice().sort((a, b) => a.localeCompare(b, 'uk')); let i = 0;
-    LAY.grid = LAY.grid.map(r => r.map(d => d.map(() => names[i++] || ''))); dirty = true; drawEdit();
-    if (i < names.length) toast('У схемі не вистачає місць для ' + (names.length - Math.min(i, names.length) + 0) + ' учн.: збільште ряди чи парти', true);
-  };
-  $('e-clear').onclick = () => { if (!confirm('Очистити всі місця?')) return; LAY.grid = LAY.grid.map(r => r.map(d => d.map(() => ''))); dirty = true; drawEdit(); };
-  $('e-imp').onclick = () => $('e-file').click();
-  $('e-file').onchange = async e => {
-    const f = e.target.files[0]; e.target.value = ''; if (!f) return;
-    try { let j = JSON.parse(await f.text()); if (j.layouts) j = j.layouts[cls()] || j.layouts[Object.keys(j.layouts)[0]]; const L = normLayout(j); if (!L) throw 0; LAY = L; dirty = true; drawEdit(); toast('Схему завантажено, перевірте й натисніть «Зберегти розсадку»'); }
-    catch (err) { toast('Не вдалося прочитати файл схеми', true); }
-  };
-  $('e-save').onclick = async () => {
-    try { await api('t_seat_save', { cls: cls(), room: room(), json: JSON.stringify(LAY) }); dirty = false; toast('Розсадку збережено'); sv('ok', '✓ Збережено'); }
-    catch (err) { if (err.message !== 'pin') toast('Не вдалося зберегти: ' + err.message, true); }
-  };
-  window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
-  boot();
+  if (PIN) boot().catch(() => {}); else showLogin();
 })();
 </script>
 <script src="nav.js"></script>
