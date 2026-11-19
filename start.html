@@ -102,7 +102,7 @@
 </div>
 <script>
 (() => {
-  const TEMPLATE_ID = '';   // ← ID таблиці-шаблону (частина адреси між /d/ і /edit). Таблиця має бути доступна «усім, хто має посилання» для перегляду.
+  const TEMPLATE_ID = '1oe0ZyqYvxz2ipomSA5FDr0kl7PQSqQnq_SnuzKpIx10';   // ← ID таблиці-шаблону (частина адреси між /d/ і /edit). Таблиця має бути доступна «усім, хто має посилання» для перегляду.
   const $ = id => document.getElementById(id);
   const ls = { g(k) { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } }, s(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
   if (TEMPLATE_ID) $('copy').href = 'https://docs.google.com/spreadsheets/d/' + encodeURIComponent(TEMPLATE_ID) + '/copy';
