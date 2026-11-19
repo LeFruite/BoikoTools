@@ -81,6 +81,9 @@
   <div class="card hidden" id="done">
     <h2>✅ Готово</h2>
     <p style="margin:0 0 12px">Скрипт підключено. Перший крок — додати учнів до груп, потім можна створювати роботи.</p>
+    <label for="mylink">Наведіть камеру телефона на QR-код — кабінет відкриється на ньому вже підключеним (потрібен лише пін). Або збережіть посилання в закладки:</label>
+    <div id="qrbox" style="text-align:center;margin:8px 0"></div>
+    <input id="mylink" readonly style="margin-bottom:8px"><button class="btn ghost" id="copylink" style="margin-bottom:14px">Копіювати посилання</button><br>
     <a class="btn" href="students.html">Додати учнів</a> <a class="btn ghost" href="editor.html">Кабінет вчителя</a>
   </div>
 
@@ -99,7 +102,7 @@
 </div>
 <script>
 (() => {
-  const TEMPLATE_ID = '1oe0ZyqYvxz2ipomSA5FDr0kl7PQSqQnq_SnuzKpIx10';   // ← ID таблиці-шаблону (частина адреси між /d/ і /edit). Таблиця має бути доступна «усім, хто має посилання» для перегляду.
+  const TEMPLATE_ID = '';   // ← ID таблиці-шаблону (частина адреси між /d/ і /edit). Таблиця має бути доступна «усім, хто має посилання» для перегляду.
   const $ = id => document.getElementById(id);
   const ls = { g(k) { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } }, s(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
   if (TEMPLATE_ID) $('copy').href = 'https://docs.google.com/spreadsheets/d/' + encodeURIComponent(TEMPLATE_ID) + '/copy';
@@ -146,10 +149,14 @@
       const a = await post(url, { action: 't_auth', pin });
       if (a.error) throw new Error(a.error === 'pin' ? 'Невірний пін.' : a.error);
       ls.s('script_api', url); try { sessionStorage.setItem('pin', pin); } catch (e) {}
+      $('mylink').value = new URL('editor.html', location.href).href + '?api=' + encodeURIComponent(url);
+      try { const id = (url.match(/\/s\/([\w-]+)\/exec$/) || [])[1]; if (id && window.QR) $('qrbox').innerHTML = QR.svg(new URL('editor.html', location.href).href + '?api=' + id, 220); } catch (e) {}
       $('main').classList.add('hidden'); $('done').classList.remove('hidden'); window.scrollTo(0, 0);
     } catch (e) { say($('msg'), e.message, 'err'); }
     $('go').disabled = false;
   };
+
+  $('copylink').onclick = () => { $('mylink').select(); try { navigator.clipboard.writeText($('mylink').value); } catch (e) { document.execCommand('copy'); } $('copylink').textContent = 'Скопійовано ✓'; };
 
   /* ---- налаштування (start.html#settings) ---- */
   function showSettings() { $('main').classList.add('hidden'); $('settings').classList.remove('hidden'); try { $('spin').value = sessionStorage.getItem('pin') || ''; } catch (e) {} }
@@ -178,6 +185,7 @@
   probe();
 })();
 </script>
+<script src="qr.js"></script>
 <script src="nav.js"></script>
 </body>
 </html>
