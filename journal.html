@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Журнал оцінок</title>
+<title>Журнал і оцінки</title>
 <script src="config.js"></script>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#1f7a5a">
@@ -46,12 +46,24 @@
   .g-hi { background:#dff3e6 !important; } .g-mid { background:#fff3cf !important; } .g-lo { background:#fbe0dc !important; } .g-n { background:#c0392b !important; color:#fff; font-weight:800; } .g-z { background:#ffe6b0 !important; }
   .dt { display:block; font-weight:500; color:var(--muted); }
   @media (max-width:640px) { .wrap { padding:10px; } table.j th:first-child, table.j td:first-child { min-width:130px; } }
+  #modes { display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
+  #xpane .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:8px 0; } #xpane input[type=text], #xpane input:not([type]), #xpane input[type=password] { min-width:0; }
+  #xpane table { border-collapse:separate; border-spacing:0; font-size:14px; }
+  #xpane th, #xpane td { padding:5px 8px; border-bottom:1px solid var(--line); border-right:1px solid var(--line); text-align:center; white-space:nowrap; background:#fff; }
+  #xpane thead th { position:sticky; top:0; background:#e8eef7; z-index:2; }
+  #xpane th.n, #xpane td.n { position:sticky; left:0; text-align:left; background:#fff; z-index:1; min-width:190px; font-weight:600; } #xpane thead th.n { z-index:3; background:#e8eef7; }
+  #xpane td.avg { font-weight:700; background:#f7f7f2; }
+  .m { display:inline-block; margin:0 1px; padding:1px 6px; border-radius:6px; font-weight:600; }
+  .c-урок { background:#fff3d6; } .c-ДЗ { background:#e6efff; } .c-СР { background:#ffe3c9; } .c-В { background:#e7f6e7; } .c-Н { background:#ddd; color:#444; }
+  .lg span { margin-right:10px; font-size:13px; }
 </style>
 </head>
 <body>
-<div class="top"><div class="top-in"><div class="brand">Журнал оцінок</div>
+<div class="top"><div class="top-in"><div class="brand">Журнал і оцінки</div>
   <a class="btn ghost" href="students.html">Списки груп</a><a class="btn ghost" href="seating.html">Розсадка</a><a class="btn ghost" href="editor.html">Кабінет вчителя</a></div></div>
 <div class="wrap">
+  <div id="modes"><button class="btn on" id="m-j">📋 Самостійні</button><button class="btn ghost" id="m-x">📊 Оцінки з Extra</button></div>
+  <div id="jwrap">
   <div id="login" class="panel hidden" style="max-width:380px;margin:40px auto">
     <h1>Пін вчителя</h1><input id="pin" type="password" placeholder="Пін" style="width:100%"><div style="height:10px"></div>
     <button class="btn" id="login-go" style="width:100%">Увійти</button><div class="err" id="lerr"></div>
@@ -62,6 +74,22 @@
       <button class="btn ghost" id="reload">↻ Оновити</button><span class="muted" id="info"></span></div>
     <div class="panel" style="padding:10px"><div class="tw" id="tw"><div class="muted" style="padding:14px">Завантаження…</div></div></div>
     <p class="muted" style="font-size:13px">Дані беруться з аркушів «Журнал N клас». Виправити оцінку можна в самій таблиці або в результатах роботи в кабінеті вчителя. Колір: 10–12 зелений, 7–9 жовтий, 1–6 червоний; «Н» — відсутній.</p>
+  </div>
+  </div>
+  <div id="xpane" class="hidden">
+    <div class="panel hidden" id="xsetup">
+      <p class="muted">Вставте адресу приймача (Marks_Log, «…/exec») і ключ LOG_KEY. Вони зберігаються лише в цьому браузері.</p>
+      <div class="row"><input id="xu" placeholder="https://script.google.com/macros/s/…/exec" style="flex:1;min-width:200px"><input id="xk" type="password" placeholder="ключ"><button class="btn" id="xgo">Показати</button></div>
+    </div>
+    <div id="xmain" class="hidden">
+      <div class="row" id="xtabs"></div>
+      <div class="row"><input id="xq" placeholder="Пошук учня…"><select id="xcat"><option value="">Усі категорії</option></select>
+        <label class="muted"><input type="checkbox" id="xrev"> нові дати зліва</label><button class="btn ghost" id="xreload">↻ Оновити</button><button class="btn ghost" id="xout">Вийти</button></div>
+      <div class="lg muted"><span><b class="m c-урок">9</b> урок</span><span><b class="m c-ДЗ">9</b> Дом. завдання</span><span><b class="m c-СР">9</b> С\Р</span><span><b class="m c-В">9</b> Відпрацювання</span><span><b class="m c-Н">Н</b> відсутній</span></div>
+      <div class="tw" style="margin-top:8px"><table id="xt"></table></div>
+      <p class="muted" id="xinfo"></p>
+    </div>
+    <p class="err" id="xerr"></p>
   </div>
 </div>
 <div id="toast" class="hidden"></div>
@@ -125,7 +153,63 @@
     } catch (e) { if (e.message !== 'pin') toast(e.message, true); }
   }
   if (PIN) boot(); else showLogin();
+
+  /* ---------- Оцінки з Extra (раніше окрема сторінка grades.html) ---------- */
+  let XD = null, xcur = '', mode = 'j';
+  const ls = { g(k) { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } }, s(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
+  const xcls = c => /Відпр/i.test(c) ? 'В' : /Дом/i.test(c) ? 'ДЗ' : /^с.?[\\/р]/i.test(c.replace(/[a-z]/gi, ch => ({ c: 'с', C: 'С', p: 'р', P: 'Р' }[ch] || ch))) ? 'СР' : c === 'Н' ? 'Н' : 'урок';
+  function setMode(m) {
+    mode = m; ls.s('jv_mode', m); $('m-j').className = 'btn ' + (m === 'j' ? 'on' : 'ghost'); $('m-x').className = 'btn ' + (m === 'x' ? 'on' : 'ghost');
+    $('jwrap').classList.toggle('hidden', m !== 'j'); $('xpane').classList.toggle('hidden', m !== 'x');
+    try { history.replaceState(null, '', m === 'x' ? '#extra' : location.pathname + location.search); } catch (e) {}
+    if (m === 'x' && !XD) xload();
+  }
+  $('m-j').onclick = () => setMode('j'); $('m-x').onclick = () => setMode('x');
+  async function xload() {
+    $('xerr').textContent = '';
+    const u = ls.g('gr_url'), k = ls.g('gr_key');
+    if (!u || !k) { $('xsetup').classList.remove('hidden'); $('xmain').classList.add('hidden'); return; }
+    $('xsetup').classList.add('hidden');
+    try {
+      const r = await fetch(u + (u.includes('?') ? '&' : '?') + 'grades=1&key=' + encodeURIComponent(k)), j = await r.json();
+      if (j.error) throw new Error(j.error === 'bad key' ? 'Невірний ключ' : j.error);
+      if (!j.classes) throw new Error('приймач ще зі старим кодом — у Apps Script: Розгорнути → Керувати розгортаннями → ✏ → Нова версія → Розгорнути');
+      XD = j.classes; $('xmain').classList.remove('hidden');
+      const names = Object.keys(XD);
+      if (!names.includes(xcur)) xcur = ls.g('gr_cls') && names.includes(ls.g('gr_cls')) ? ls.g('gr_cls') : names[0];
+      const cats = new Set(); names.forEach(n => XD[n].students.forEach(s => s.c.forEach(l => l.forEach(x => cats.add(x[1])))));
+      $('xcat').innerHTML = '<option value="">Усі категорії</option>' + [...cats].map(c => '<option>' + esc(c) + '</option>').join('');
+      xtabs(); xdraw();
+    } catch (e) { $('xerr').textContent = 'Не вдалося завантажити: ' + e.message; $('xsetup').classList.remove('hidden'); }
+  }
+  function xtabs() {
+    $('xtabs').innerHTML = Object.keys(XD).map(n => '<button class="btn ghost' + (n === xcur ? ' on' : '') + '" data-c="' + esc(n) + '">' + esc(n) + '</button>').join('');
+    $('xtabs').querySelectorAll('button').forEach(b => b.onclick = () => { xcur = b.dataset.c; ls.s('gr_cls', xcur); xtabs(); xdraw(); });
+  }
+  function xdraw() {
+    const d = XD && XD[xcur]; if (!d) return;
+    const q = $('xq').value.trim().toLowerCase(), cat = $('xcat').value, rev = $('xrev').checked;
+    let idx = d.dates.map((_, i) => i); if (rev) idx.reverse();
+    let h = '<thead><tr><th class="n">Учень</th>' + idx.map(i => '<th>' + d.dates[i].slice(8, 10) + '.' + d.dates[i].slice(5, 7) + '</th>').join('') + '<th>Сер.</th><th>Н</th></tr></thead><tbody>', shown = 0;
+    d.students.forEach(s => {
+      if (q && !s.n.toLowerCase().includes(q)) return;
+      shown++; let sum = 0, n = 0, ab = 0;
+      const cells = idx.map(i => s.c[i].filter(x => !cat || x[1] === cat).map(x => {
+        const v = parseFloat(String(x[0]).replace(',', '.'));
+        if (x[1] === 'Н') ab++; else if (!isNaN(v)) { sum += v; n++; }
+        return '<span class="m c-' + xcls(x[1]) + '" title="' + esc(x[1]) + '">' + esc(x[0]) + '</span>';
+      }).join(''));
+      h += '<tr><td class="n">' + esc(s.n) + '</td>' + cells.map(c => '<td>' + c + '</td>').join('') + '<td class="avg">' + (n ? (sum / n).toFixed(1) : '') + '</td><td>' + (ab || '') + '</td></tr>';
+    });
+    $('xt').innerHTML = h + '</tbody>'; $('xinfo').textContent = shown + ' учнів · ' + d.dates.length + ' днів з оцінками';
+  }
+  $('xgo').onclick = () => { ls.s('gr_url', $('xu').value.trim()); ls.s('gr_key', $('xk').value.trim()); xload(); };
+  $('xreload').onclick = xload;
+  $('xout').onclick = () => { ls.s('gr_url', ''); ls.s('gr_key', ''); XD = null; xload(); };
+  $('xq').oninput = xdraw; $('xcat').onchange = xdraw; $('xrev').onchange = xdraw;
+  setMode(location.hash === '#extra' || (!location.hash && ls.g('jv_mode') === 'x') ? 'x' : 'j');
 })();
 </script>
+<script src="nav.js"></script>
 </body>
 </html>
