@@ -61,12 +61,24 @@
   .b-ok { background:var(--accent-soft); color:var(--accent); } .b-bad { background:var(--bad-soft); color:var(--bad); } .b-amb { background:var(--amber-soft); color:var(--amber); }
   .gin { width:78px; text-align:center; } .acts { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
   .scroll { overflow:auto; }
+  /* телефон: рядки таблиць стають картками, щоб усе (оцінка, «Здав», кнопки) було видно без прокрутки вбік */
+  @media (max-width:640px) {
+    .rt, .rt tbody, .rt tr, .rt td { display:block; width:auto; max-width:100%; }
+    .rt tr:first-child { display:none; }
+    .rt tr { border:1px solid var(--line); border-radius:12px; padding:10px 12px; margin-bottom:10px; background:#fff; }
+    .rt td { border:0 !important; padding:3px 0 !important; }
+    .rt td::before { color:var(--muted); font-size:13px; font-weight:700; }
+    .rt-act td:nth-child(2)::before { content:"Термін: "; } .rt-act td:nth-child(3)::before { content:"За пропуски: "; } .rt-act td:nth-child(4)::before { content:"Тема: "; } .rt-act td:nth-child(5)::before { content:"Здав: "; display:block; }
+    .rt-hist td:nth-child(2)::before { content:"Результат: "; } .rt-hist td:nth-child(3)::before { content:"Тема: "; }
+    .rt-act td:nth-child(5), .rt-act td:nth-child(6) { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+    .rt-act td:nth-child(5)::before { flex-basis:100%; }
+  }
 </style>
 <script>if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));</script>
 </head>
 <body>
 <div class="top"><div class="top-in"><div class="brand">🕒 Відпрацювання</div>
-  <a class="btn ghost" href="editor.html">← Кабінет</a><a class="btn ghost" href="plan.html">📅 План занять</a><a class="btn ghost" href="grades.html">Оцінки з Extra</a></div></div>
+  <a class="btn ghost" href="editor.html">← Кабінет</a><a class="btn ghost" href="plan.html">📅 План занять</a><a class="btn ghost" href="journal.html#extra">Оцінки з Extra</a></div></div>
 <div class="wrap" id="app"></div>
 <div id="toast" class="hidden"></div>
 
@@ -143,8 +155,8 @@
         notices.map(m => '<li><b>' + esc(m.name) + '</b> (' + esc(m.group) + ') — термін був ' + dm(m.due) + (m.topic ? ' · ' + esc(m.topic) : '') + '</li>').join('') +
         '</ul><button class="btn sm" id="ack">Зрозуміло</button></div>' : '') +
       '<div class="panel"><h2>Нове відпрацювання</h2>' + formHtml() + '</div>' +
-      '<div class="panel"><h2>Очікують здачі (' + act.length + ')</h2>' + (act.length ? '<div class="scroll"><table><tr><th>Учень</th><th>Термін</th><th>За пропуски</th><th>Тема</th><th>Здав</th><th></th></tr>' + act.map(actRow).join('') + '</table></div>' : '<div class="muted">Немає активних відпрацювань.</div>') + '</div>' +
-      (hist.length ? '<div class="panel"><h2>Історія</h2><div class="scroll"><table><tr><th>Учень</th><th>Результат</th><th>Тема</th><th></th></tr>' + hist.map(histRow).join('') + '</table></div></div>' : '');
+      '<div class="panel"><h2>Очікують здачі (' + act.length + ')</h2>' + (act.length ? '<div class="scroll"><table class="rt rt-act"><tr><th>Учень</th><th>Термін</th><th>За пропуски</th><th>Тема</th><th>Здав</th><th></th></tr>' + act.map(actRow).join('') + '</table></div>' : '<div class="muted">Немає активних відпрацювань.</div>') + '</div>' +
+      (hist.length ? '<div class="panel"><h2>Історія</h2><div class="scroll"><table class="rt rt-hist"><tr><th>Учень</th><th>Результат</th><th>Тема</th><th></th></tr>' + hist.map(histRow).join('') + '</table></div></div>' : '');
     wire();
   }
   function formHtml() {
