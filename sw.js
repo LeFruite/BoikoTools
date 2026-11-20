@@ -1,6 +1,6 @@
 /* Сервіс-воркер кабінету вчителя: сторінки відкриваються навіть при слабкому зв'язку.
    Сторінки учнів (index.html, live.html) і запити до Apps Script він не чіпає. */
-const CACHE = 'samostiini-v3', FONTS = 'samostiini-fonts-v1';
+const CACHE = 'boikotools-v4', FONTS = 'boikotools-fonts-v1';
 const SHELL = ['editor.html', 'makeup.html', 'plan.html', 'grades.html', 'materials.html', 'journal.html', 'students.html', 'setup.html',
   'seating.html', 'live-teacher.html', 'docs.html', 'config.js', 'nav.js', 'qr.js', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
 self.addEventListener('install', e => {
